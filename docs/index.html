@@ -3,51 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的GitHub Pages网站</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
+    <title>林间小筑 - 博客导航</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2D3748',
+                        accent: '#718096',
+                        light: '#F7FAFC',
+                        highlight: '#805AD5',
+                        overlay: 'rgba(45, 55, 72, 0.7)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Georgia', 'serif']
+                    }
+                }
+            }
         }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .content {
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-        }
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #666;
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .link-hover {
+                @apply transition-all duration-300 hover:text-highlight hover:translate-x-1;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .header-gradient {
+                background: linear-gradient(to right, rgba(128, 90, 213, 0.9), rgba(66, 153, 225, 0.8));
+            }
         }
     </style>
+    
+    <!-- 预加载字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <header>
-        <h1>欢迎来到我的网站</h1>
-        <p>这是一个部署在GitHub Pages上的简单页面</p>
+<body class="bg-light text-primary font-serif min-h-screen flex flex-col">
+    <!-- 美化后的页头 -->
+    <header class="relative py-16 md:py-24 mb-12 overflow-hidden">
+        <!-- 背景图 -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://picsum.photos/id/1056/1920/1080" alt="森林背景" class="w-full h-full object-cover">
+            <!-- 渐变遮罩，增强文字可读性 -->
+            <div class="absolute inset-0 header-gradient mix-blend-multiply"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6 border border-white/30">
+                    <i class="fa fa-pencil text-white text-3xl"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold font-sans mb-4 text-white text-shadow">林间小筑</h1>
+                <p class="text-white/90 text-lg md:text-xl max-w-2xl leading-relaxed">
+                    记录生活的点滴思考与感悟，分享技术与成长的路上所见所得
+                </p>
+                
+                <!-- 装饰元素 -->
+                <div class="mt-8 w-24 h-1 bg-white/50 rounded-full"></div>
+            </div>
+        </div>
     </header>
 
-    <div class="content">
-        <h2>关于本页面</h2>
-        <p>这个页面用于测试GitHub Pages的部署功能。如果您能看到这段文字，说明部署成功！</p>
-        
-        <h3>使用说明</h3>
-        <ul>
-            <li>将此文件命名为index.html</li>
-            <li>上传到GitHub仓库的根目录或docs文件夹</li>
-            <li>在GitHub Pages设置中选择对应的分支和目录</li>
-        </ul>
-    </div>
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
+        <div class="bg-white rounded-xl p-8 shadow-sm transform transition-all duration-500 hover:shadow-md">
+            <h2 class="font-sans font-semibold text-2xl mb-6 pb-3 border-b border-gray-100 flex items-center">
+                <i class="fa fa-link text-highlight mr-3"></i> 文章导航
+            </h2>
+            
+            <!-- 文章链接列表 -->
+            <ul class="space-y-5">
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/morning-walk.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>清晨的公园散步：观察与思考</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/vue3-tips.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>Vue3 实用技巧总结：从项目实战出发</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/book-notes.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>《被讨厌的勇气》读书笔记：自我启发的阿德勒心理学</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/guangzhou-trip.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>广州三日游：老城区与新活力的碰撞</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/work-experience.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>工作三年，我学会的3个重要道理</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/css-grid.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>CSS Grid 实战：3分钟实现响应式卡片布局</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/sanya-trip.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>三亚旅行避坑指南：5天4晚自由行攻略</span>
+                    </a>
+                </li>
+                <li class="border-l-2 border-transparent hover:border-highlight pl-4 py-1">
+                    <a href="posts/reading-list.html" class="flex items-center link-hover">
+                        <i class="fa fa-angle-right mr-3 text-highlight/70"></i>
+                        <span>2024年上半年阅读清单与简评</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </main>
 
-    <footer>
-        <p>&copy; 2023 我的GitHub Pages网站</p>
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-12 mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center justify-center md:justify-start space-x-2 mb-2">
+                        <i class="fa fa-pencil-square-o text-highlight text-xl"></i>
+                        <h2 class="text-xl font-bold font-sans">林间小筑</h2>
+                    </div>
+                    <p class="text-gray-300 text-sm text-center md:text-left max-w-md">
+                        一个分享生活、技术与思考的个人博客，用文字记录成长的足迹
+                    </p>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-highlight transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-highlight transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-highlight transition-colors">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 text-sm">© 2024 林间小筑 | 用 GitHub Pages 构建</p>
+                </div>
+            </div>
+        </div>
     </footer>
+
+    <!-- 交互效果 -->
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 页面加载动画
+        window.addEventListener('load', () => {
+            document.querySelector('header').classList.add('opacity-100');
+            document.querySelector('header').classList.remove('opacity-0', 'translate-y-4');
+        });
+    </script>
 </body>
 </html>
+    
