@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maven配置文件完全指南：从入门到精通</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#4f46e5',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-gradient {
+                background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            }
+            .code-block {
+                position: relative;
+                overflow-x: auto;
+            }
+            .copy-btn {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                opacity: 0.7;
+                transition: opacity 0.3s;
+            }
+            .code-block:hover .copy-btn {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="text-primary font-bold text-xl flex items-center">
+                <i class="fa fa-cogs mr-2"></i>
+                <span>Maven配置指南</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#introduction" class="hover:text-primary transition-colors">简介</a>
+                <a href="#configuration" class="hover:text-primary transition-colors">配置示例</a>
+                <a href="#explanation" class="hover:text-primary transition-colors">配置详解</a>
+                <a href="#faq" class="hover:text-primary transition-colors">常见问题</a>
+            </div>
+            <button class="md:hidden text-gray-600" id="menuToggle">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#introduction" class="py-2 hover:text-primary transition-colors">简介</a>
+                <a href="#configuration" class="py-2 hover:text-primary transition-colors">配置示例</a>
+                <a href="#explanation" class="py-2 hover:text-primary transition-colors">配置详解</a>
+                <a href="#faq" class="py-2 hover:text-primary transition-colors">常见问题</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 头部横幅 -->
+    <header class="bg-gradient text-white py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 text-shadow">Maven配置文件完全指南</h1>
+            <p class="text-lg md:text-xl max-w-3xl opacity-90">从基础配置到高级技巧，全面掌握Maven settings.xml的使用方法与最佳实践</p>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 侧边栏/目录 -->
+            <aside class="lg:w-1/4">
+                <div class="sticky top-24 bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">文章目录</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#introduction" class="flex items-center text-gray-600 hover:text-primary"><i class="fa fa-angle-right mr-2"></i> Maven配置文件简介</a></li>
+                        <li><a href="#configuration" class="flex items-center text-gray-600 hover:text-primary"><i class="fa fa-angle-right mr-2"></i> 完整配置示例</a></li>
+                        <li>
+                            <a href="#explanation" class="flex items-center text-gray-600 hover:text-primary"><i class="fa fa-angle-right mr-2"></i> 配置详解</a>
+                            <ul class="ml-6 mt-1 space-y-1">
+                                <li><a href="#local-repo" class="text-sm text-gray-500 hover:text-primary">本地仓库配置</a></li>
+                                <li><a href="#mirrors" class="text-sm text-gray-500 hover:text-primary">镜像仓库配置</a></li>
+                                <li><a href="#profiles" class="text-sm text-gray-500 hover:text-primary">仓库与Profile管理</a></li>
+                                <li><a href="#mirrorOf" class="text-sm text-gray-500 hover:text-primary">mirrorOf取值规则</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#faq" class="flex items-center text-gray-600 hover:text-primary"><i class="fa fa-angle-right mr-2"></i> 常见问题解答</a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- 文章内容 -->
+            <article class="lg:w-3/4 space-y-8">
+                <!-- 简介部分 -->
+                <section id="introduction" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">Maven配置文件简介</h2>
+                    <p class="mb-4 text-gray-700">Maven是Java生态系统中最流行的构建工具之一，而<code class="bg-gray-100 px-1 py-0.5 rounded text-primary">settings.xml</code>作为Maven的核心配置文件，扮演着至关重要的角色。它主要用于配置Maven的全局行为，包括仓库位置、镜像设置、代理配置等。</p>
+                    
+                    <p class="mb-4 text-gray-700">Maven配置文件通常有两个位置：</p>
+                    <ul class="list-disc pl-6 mb-4 space-y-2 text-gray-700">
+                        <li>全局配置：<code class="bg-gray-100 px-1 py-0.5 rounded">${Maven安装目录}/conf/settings.xml</code></li>
+                        <li>用户配置：<code class="bg-gray-100 px-1 py-0.5 rounded">${用户目录}/.m2/settings.xml</code></li>
+                    </ul>
+                    
+                    <p class="text-gray-700">用户配置会覆盖全局配置，推荐使用用户配置方式，这样不会影响系统中其他用户，也便于版本控制和迁移。</p>
+                </section>
+
+                <!-- 配置示例部分 -->
+                <section id="configuration" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">完整配置示例</h2>
+                    <p class="mb-6 text-gray-700">以下是一个兼顾国内访问速度和依赖完整性的完整<code class="bg-gray-100 px-1 py-0.5 rounded text-primary">settings.xml</code>配置，包含了阿里云、华为云、腾讯云等国内镜像，以及常用的第三方仓库配置。</p>
+                    
+                    <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg mb-4">
+                        <button class="copy-btn bg-gray-700 text-white px-2 py-1 rounded text-sm" onclick="copyCode(this)">
+                            <i class="fa fa-copy mr-1"></i> 复制
+                        </button>
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd"&gt;
+
+  &lt;!-- 本地仓库路径配置：建议修改到非系统盘 --&gt;
+  &lt;localRepository&gt;D:\.m2\repository&lt;/localRepository&gt;
+
+  &lt;!-- 镜像仓库配置：按优先级排序，国内镜像优先 --&gt;
+  &lt;mirrors&gt;
+    &lt;!-- 1. 阿里云公共仓库（优先级最高） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;aliyun-central&lt;/id&gt;
+      &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;
+      &lt;name&gt;阿里云公共仓库&lt;/name&gt;
+      &lt;url&gt;https://maven.aliyun.com/repository/public&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 2. 华为云仓库（作为阿里云的主要补充） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;huawei-cloud&lt;/id&gt;
+      &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;
+      &lt;name&gt;华为云公共仓库&lt;/name&gt;
+      &lt;url&gt;https://repo.huaweicloud.com/repository/maven/&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 3. 阿里云谷歌仓库（补充Android等谷歌相关依赖） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;aliyun-google&lt;/id&gt;
+      &lt;mirrorOf&gt;google&lt;/mirrorOf&gt;
+      &lt;name&gt;阿里云谷歌仓库&lt;/name&gt;
+      &lt;url&gt;https://maven.aliyun.com/repository/google&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 4. 阿里云Spring仓库（优化Spring生态依赖下载） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;aliyun-spring&lt;/id&gt;
+      &lt;mirrorOf&gt;spring&lt;/mirrorOf&gt;
+      &lt;name&gt;阿里云Spring仓库&lt;/name&gt;
+      &lt;url&gt;https://maven.aliyun.com/repository/spring&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 5. Apache官方仓库镜像 --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;mirror-apache-releases&lt;/id&gt;
+      &lt;mirrorOf&gt;apache-releases&lt;/mirrorOf&gt;
+      &lt;name&gt;Apache Releases镜像&lt;/name&gt;
+      &lt;url&gt;https://repository.apache.org/content/repositories/releases/&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 6. 腾讯云仓库（作为国内镜像的补充备份） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;tencent-cloud&lt;/id&gt;
+      &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;
+      &lt;name&gt;腾讯云公共仓库&lt;/name&gt;
+      &lt;url&gt;https://mirrors.cloud.tencent.com/nexus/repository/maven-public/&lt;/url&gt;
+    &lt;/mirror&gt;
+
+    &lt;!-- 7. Maven官方中央仓库（最后兜底） --&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;maven-central&lt;/id&gt;
+      &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;
+      &lt;name&gt;Maven官方中央仓库&lt;/name&gt;
+      &lt;url&gt;https://repo1.maven.org/maven2/&lt;/url&gt;
+    &lt;/mirror&gt;
+  &lt;/mirrors&gt;
+
+  &lt;!-- 仓库配置：通过profile管理非默认仓库 --&gt;
+  &lt;profiles&gt;
+    &lt;!-- 第三方仓库配置组 --&gt;
+    &lt;profile&gt;
+      &lt;id&gt;third-party-repos&lt;/id&gt;
+      &lt;repositories&gt;
+        &lt;!-- Apache官方仓库 --&gt;
+        &lt;repository&gt;
+          &lt;id&gt;apache-releases&lt;/id&gt;
+          &lt;url&gt;https://repository.apache.org/content/repositories/releases/&lt;/url&gt;
+          &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+            &lt;updatePolicy&gt;daily&lt;/updatePolicy&gt;
+          &lt;/releases&gt;
+          &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+          &lt;/snapshots&gt;
+        &lt;/repository&gt;
+
+        &lt;!-- Spring官方仓库 --&gt;
+        &lt;repository&gt;
+          &lt;id&gt;spring&lt;/id&gt;
+          &lt;url&gt;https://repo.spring.io/release/&lt;/url&gt;
+          &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+          &lt;/releases&gt;
+          &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+          &lt;/snapshots&gt;
+        &lt;/repository&gt;
+
+        &lt;!-- 谷歌仓库 --&gt;
+        &lt;repository&gt;
+          &lt;id&gt;google&lt;/id&gt;
+          &lt;url&gt;https://maven.google.com/&lt;/url&gt;
+          &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+          &lt;/releases&gt;
+          &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+          &lt;/snapshots&gt;
+        &lt;/repository&gt;
+      &lt;/repositories&gt;
+
+      &lt;!-- 插件仓库配置 --&gt;
+      &lt;pluginRepositories&gt;
+        &lt;pluginRepository&gt;
+          &lt;id&gt;aliyun-plugin&lt;/id&gt;
+          &lt;url&gt;https://maven.aliyun.com/repository/public&lt;/url&gt;
+          &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+          &lt;/releases&gt;
+          &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+          &lt;/snapshots&gt;
+        &lt;/pluginRepository&gt;
+        &lt;!-- 华为云插件仓库 --&gt;
+        &lt;pluginRepository&gt;
+          &lt;id&gt;huawei-plugin&lt;/id&gt;
+          &lt;url&gt;https://repo.huaweicloud.com/repository/maven/&lt;/url&gt;
+          &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+          &lt;/releases&gt;
+          &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+          &lt;/snapshots&gt;
+        &lt;/pluginRepository&gt;
+      &lt;/pluginRepositories&gt;
+    &lt;/profile&gt;
+
+    &lt;!-- JDK版本默认配置 --&gt;
+    &lt;profile&gt;
+      &lt;id&gt;default-jdk&lt;/id&gt;
+      &lt;activation&gt;
+        &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+      &lt;/activation&gt;
+      &lt;properties&gt;
+        &lt;maven.compiler.source&gt;17&lt;/maven.compiler.source&gt;
+        &lt;maven.compiler.target&gt;17&lt;/maven.compiler.target&gt;
+        &lt;maven.compiler.compilerVersion&gt;17&lt;/maven.compiler.compilerVersion&gt;
+      &lt;/properties&gt;
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+
+  &lt;!-- 激活配置 --&gt;
+  &lt;activeProfiles&gt;
+    &lt;activeProfile&gt;third-party-repos&lt;/activeProfile&gt;
+  &lt;/activeProfiles&gt;
+
+  &lt;!-- 可选：配置Maven全局属性 --&gt;
+  &lt;properties&gt;
+    &lt;maven.metadata.legacy&gt;true&lt;/maven.metadata.legacy&gt;
+  &lt;/properties&gt;
+
+&lt;/settings&gt;</pre>
+                    </div>
+                    
+                    <div class="bg-blue-50 border-l-4 border-primary p-4 rounded">
+                        <p class="text-gray-700"><i class="fa fa-info-circle text-primary mr-2"></i> 提示：请根据您的实际环境修改本地仓库路径和JDK版本。国内用户使用此配置可显著提高依赖下载速度。</p>
+                    </div>
+                </section>
+
+                <!-- 配置详解部分 -->
+                <section id="explanation" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">配置详解</h2>
+                    
+                    <!-- 本地仓库配置 -->
+                    <div id="local-repo" class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>本地仓库配置
+                        </h3>
+                        <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg mb-4">
+                            <button class="copy-btn bg-gray-700 text-white px-2 py-1 rounded text-sm" onclick="copyCode(this)">
+                                <i class="fa fa-copy mr-1"></i> 复制
+                            </button>
+<pre>&lt;localRepository&gt;D:\.m2\repository&lt;/localRepository&gt;</pre>
+                        </div>
+                        <p class="mb-2 text-gray-700">本地仓库是Maven存储所有下载依赖的地方，默认位于用户目录下的<code class="bg-gray-100 px-1 py-0.5 rounded">.m2/repository</code>。</p>
+                        <p class="text-gray-700">将本地仓库配置到非系统盘有以下好处：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-700">
+                            <li>节省系统盘空间，尤其是依赖较多的项目</li>
+                            <li>系统重装时可以保留依赖，无需重新下载</li>
+                            <li>便于在多个项目间共享依赖</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 镜像仓库配置 -->
+                    <div id="mirrors" class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i class="fa fa-refresh text-primary mr-2"></i>镜像仓库配置
+                        </h3>
+                        <p class="mb-4 text-gray-700">镜像仓库用于替代远程仓库，优先从镜像下载依赖，这对于国内用户来说尤为重要，可以显著提高下载速度。</p>
+                        
+                        <div class="overflow-x-auto mb-6">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-700">
+                                        <th class="py-3 px-4 border-b text-left">镜像名称</th>
+                                        <th class="py-3 px-4 border-b text-left">作用</th>
+                                        <th class="py-3 px-4 border-b text-left">优先级</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b">阿里云公共仓库</td>
+                                        <td class="py-3 px-4 border-b">替代Maven官方中央仓库，国内访问速度最快</td>
+                                        <td class="py-3 px-4 border-b">最高</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 border-b">华为云仓库</td>
+                                        <td class="py-3 px-4 border-b">作为阿里云的补充，增加冗余</td>
+                                        <td class="py-3 px-4 border-b">高</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b">阿里云谷歌仓库</td>
+                                        <td class="py-3 px-4 border-b">代理谷歌仓库，解决Android依赖下载问题</td>
+                                        <td class="py-3 px-4 border-b">中高</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 border-b">阿里云Spring仓库</td>
+                                        <td class="py-3 px-4 border-b">优化Spring生态依赖下载</td>
+                                        <td class="py-3 px-4 border-b">中高</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b">Apache官方仓库镜像</td>
+                                        <td class="py-3 px-4 border-b">处理Apache相关组件</td>
+                                        <td class="py-3 px-4 border-b">中</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 border-b">腾讯云仓库</td>
+                                        <td class="py-3 px-4 border-b">作为国内镜像的补充备份</td>
+                                        <td class="py-3 px-4 border-b">中低</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4">Maven官方中央仓库</td>
+                                        <td class="py-3 px-4">最后兜底，确保依赖完整性</td>
+                                        <td class="py-3 px-4">最低</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <p class="text-gray-700">镜像配置的优先级是按照在<code class="bg-gray-100 px-1 py-0.5 rounded">settings.xml</code>中声明的顺序来的，前面的镜像优先生效。</p>
+                    </div>
+                    
+                    <!-- 仓库与Profile管理 -->
+                    <div id="profiles" class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i class="fa fa-cubes text-primary mr-2"></i>仓库与Profile管理
+                        </h3>
+                        <p class="mb-4 text-gray-700">Maven使用<code class="bg-gray-100 px-1 py-0.5 rounded">&lt;profile&gt;</code>来管理一组可激活的配置，包括仓库、插件、属性等。未被激活的profile中的配置不会生效。</p>
+                        
+                        <h4 class="font-medium text-gray-800 mb-2">第三方仓库配置</h4>
+                        <p class="mb-3 text-gray-700">在示例配置中，我们定义了<code class="bg-gray-100 px-1 py-0.5 rounded">third-party-repos</code>这个profile，包含了Apache、Spring和Google的官方仓库：</p>
+                        
+                        <ul class="list-disc pl-6 mb-4 space-y-2 text-gray-700">
+                            <li><strong>Apache仓库</strong>：用于获取Apache旗下的组件，如HttpClient、Commons等</li>
+                            <li><strong>Spring仓库</strong>：用于获取Spring框架相关的依赖</li>
+                            <li><strong>Google仓库</strong>：主要用于Android开发相关的依赖</li>
+                        </ul>
+                        
+                        <h4 class="font-medium text-gray-800 mb-2">插件仓库配置</h4>
+                        <p class="mb-3 text-gray-700">Maven插件是构建过程中使用的工具，如编译插件、打包插件等。插件仓库与依赖仓库是分开配置的：</p>
+                        
+                        <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg mb-4">
+                            <button class="copy-btn bg-gray-700 text-white px-2 py-1 rounded text-sm" onclick="copyCode(this)">
+                                <i class="fa fa-copy mr-1"></i> 复制
+                            </button>
+<pre>&lt;pluginRepositories&gt;
+  &lt;pluginRepository&gt;
+    &lt;id&gt;aliyun-plugin&lt;/id&gt;
+    &lt;url&gt;https://maven.aliyun.com/repository/public&lt;/url&gt;
+    &lt;releases&gt;
+      &lt;enabled&gt;true&lt;/enabled&gt;
+    &lt;/releases&gt;
+    &lt;snapshots&gt;
+      &lt;enabled&gt;false&lt;/enabled&gt;
+    &lt;/snapshots&gt;
+  &lt;/pluginRepository&gt;
+  &lt;!-- 华为云插件仓库 --&gt;
+  &lt;pluginRepository&gt;
+    &lt;id&gt;huawei-plugin&lt;/id&gt;
+    &lt;url&gt;https://repo.huaweicloud.com/repository/maven/&lt;/url&gt;
+    &lt;releases&gt;
+      &lt;enabled&gt;true&lt;/enabled&gt;
+    &lt;/releases&gt;
+    &lt;snapshots&gt;
+      &lt;enabled&gt;false&lt;/enabled&gt;
+    &lt;/snapshots&gt;
+  &lt;/pluginRepository&gt;
+&lt;/pluginRepositories&gt;</pre>
+                        </div>
+                        
+                        <h4 class="font-medium text-gray-800 mb-2">JDK版本配置</h4>
+                        <p class="mb-3 text-gray-700">通过profile可以配置默认的JDK版本，避免每个项目都要单独配置：</p>
+                        
+                        <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg mb-4">
+                            <button class="copy-btn bg-gray-700 text-white px-2 py-1 rounded text-sm" onclick="copyCode(this)">
+                                <i class="fa fa-copy mr-1"></i> 复制
+                            </button>
+<pre>&lt;profile&gt;
+  &lt;id&gt;default-jdk&lt;/id&gt;
+  &lt;activation&gt;
+    &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+  &lt;/activation&gt;
+  &lt;properties&gt;
+    &lt;maven.compiler.source&gt;17&lt;/maven.compiler.source&gt;
+    &lt;maven.compiler.target&gt;17&lt;/maven.compiler.target&gt;
+    &lt;maven.compiler.compilerVersion&gt;17&lt;/maven.compiler.compilerVersion&gt;
+  &lt;/properties&gt;
+&lt;/profile&gt;</pre>
+                        </div>
+                        
+                        <h4 class="font-medium text-gray-800 mb-2">激活Profiles</h4>
+                        <p class="mb-3 text-gray-700">通过<code class="bg-gray-100 px-1 py-0.5 rounded">&lt;activeProfiles&gt;</code>标签可以激活指定的profile：</p>
+                        
+                        <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg">
+                            <button class="copy-btn bg-gray-700 text-white px-2 py-1 rounded text-sm" onclick="copyCode(this)">
+                                <i class="fa fa-copy mr-1"></i> 复制
+                            </button>
+<pre>&lt;activeProfiles&gt;
+  &lt;activeProfile&gt;third-party-repos&lt;/activeProfile&gt;
+&lt;/activeProfiles&gt;</pre>
+                        </div>
+                    </div>
+                    
+                    <!-- mirrorOf取值规则 -->
+                    <div id="mirrorOf" class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i class="fa fa-random text-primary mr-2"></i>mirrorOf取值规则
+                        </h3>
+                        <p class="mb-4 text-gray-700"><code class="bg-gray-100 px-1 py-0.5 rounded">mirrorOf</code>用于指定当前镜像仓库替代哪些远程仓库，其取值有多种形式，用于灵活匹配不同的仓库场景：</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-700">
+                                        <th class="py-3 px-4 border-b text-left"><code>mirrorOf</code> 值</th>
+                                        <th class="py-3 px-4 border-b text-left">含义</th>
+                                        <th class="py-3 px-4 border-b text-left">典型场景</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b font-mono text-sm">central</td>
+                                        <td class="py-3 px-4 border-b">仅替代官方中央仓库（ID为central）</td>
+                                        <td class="py-3 px-4 border-b">国内镜像加速中央仓库依赖</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 border-b font-mono text-sm">repoId</td>
+                                        <td class="py-3 px-4 border-b">仅替代ID为repoId的仓库</td>
+                                        <td class="py-3 px-4 border-b">替代企业私有仓库</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b font-mono text-sm">*</td>
+                                        <td class="py-3 px-4 border-b">替代所有仓库</td>
+                                        <td class="py-3 px-4 border-b">全局统一镜像（谨慎使用）</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 border-b font-mono text-sm">external:*</td>
+                                        <td class="py-3 px-4 border-b">替代所有远程仓库（排除本地文件仓库）</td>
+                                        <td class="py-3 px-4 border-b">只加速远程依赖，保留本地仓库</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4 border-b font-mono text-sm">repo1,repo2</td>
+                                        <td class="py-3 px-4 border-b">同时替代repo1和repo2仓库</td>
+                                        <td class="py-3 px-4 border-b">多个仓库共用一个镜像</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="py-3 px-4 font-mono text-sm">*,!repo1</td>
+                                        <td class="py-3 px-4">替代所有仓库，除了repo1</td>
+                                        <td class="py-3 px-4">排除特定仓库（如私有仓库）</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                            <p class="text-gray-700"><i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i> 注意：镜像的声明顺序很重要，前面的镜像会覆盖后面的镜像（当mirrorOf规则重叠时）。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 常见问题解答 -->
+                <section id="faq" class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">常见问题解答</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- 问题1 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq1">
+                                <span class="font-medium text-gray-800">Maven的内置仓库有哪些？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq1" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">Maven只内置了一个默认仓库：<strong>中央仓库（Central Repository）</strong>。</p>
+                                <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-700">
+                                    <li><strong>ID</strong>：<code class="bg-gray-100 px-1 py-0.5 rounded">central</code>（Maven内部固定ID，不可修改）</li>
+                                    <li><strong>默认URL</strong>：<code class="bg-gray-100 px-1 py-0.5 rounded">https://repo1.maven.org/maven2/</code></li>
+                                    <li><strong>特点</strong>：无需手动配置，包含几乎所有主流开源Java依赖，仅包含发布版依赖</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 问题2 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq2">
+                                <span class="font-medium text-gray-800">google、spring、apache-releases这些仓库ID是固定的吗？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq2" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">这些ID<strong>不是Maven内置的固定值</strong>，而是用户自定义的仓库标识符。</p>
+                                <p class="mt-2 text-gray-700">它们的作用是建立仓库和镜像之间的关联：</p>
+                                <ol class="list-decimal pl-6 mt-2 space-y-1 text-gray-700">
+                                    <li>首先在<code class="bg-gray-100 px-1 py-0.5 rounded">&lt;repository&gt;</code>中定义仓库时指定一个ID</li>
+                                    <li>然后在<code class="bg-gray-100 px-1 py-0.5 rounded">&lt;mirror&gt;</code>配置中，通过<code class="bg-gray-100 px-1 py-0.5 rounded">mirrorOf</code>引用这个ID</li>
+                                    <li>ID的命名可以自定义，但必须保持前后一致才能让镜像正确生效</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <!-- 问题3 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq3">
+                                <span class="font-medium text-gray-800">为什么有时需要配置镜像代理自己？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq3" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">在示例配置中，我们看到了这样的配置：</p>
+                                <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg my-3 text-sm">
+<pre>&lt;mirror&gt;
+  &lt;id&gt;mirror-apache-releases&lt;/id&gt;
+  &lt;mirrorOf&gt;apache-releases&lt;/mirrorOf&gt;
+  &lt;name&gt;Apache Releases镜像&lt;/name&gt;
+  &lt;url&gt;https://repository.apache.org/content/repositories/releases/&lt;/url&gt;
+&lt;/mirror&gt;</pre>
+                                </div>
+                                <p class="text-gray-700">这看起来像是用相同的URL代理自己，实际上这是一种冗余备份设计，主要有以下作用：</p>
+                                <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-700">
+                                    <li>避免因镜像优先级导致仓库被其他镜像（如mirrorOf="*"的兜底镜像）覆盖</li>
+                                    <li>为未来切换镜像预留扩展空间，只需修改镜像的URL即可</li>
+                                    <li>明确仓库的镜像绑定关系，使配置结构更清晰</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 问题4 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq4">
+                                <span class="font-medium text-gray-800">如何启用快照版依赖？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq4" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">默认配置中快照版是禁用的（<code class="bg-gray-100 px-1 py-0.5 rounded">&lt;enabled&gt;false&lt;/enabled&gt;</code>），如果需要开发或使用快照版依赖（版本号带<code class="bg-gray-100 px-1 py-0.5 rounded">-SNAPSHOT</code>），需在对应仓库中开启：</p>
+                                <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg my-3">
+<pre>&lt;repository&gt;
+  &lt;id&gt;company-snapshot&lt;/id&gt;
+  &lt;url&gt;https://your-company-repo/snapshots&lt;/url&gt;
+  &lt;releases&gt;&lt;enabled&gt;false&lt;/enabled&gt;&lt;/releases&gt;
+  &lt;snapshots&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/snapshots&gt;
+&lt;/repository&gt;</pre>
+                                </div>
+                                <p class="text-gray-700">非快照开发场景，建议保持禁用状态，避免下载不稳定版本。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 问题5 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq5">
+                                <span class="font-medium text-gray-800">如何配置企业私有仓库？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq5" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">在企业开发环境中，通常需要添加私有仓库的配置：</p>
+                                <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg my-3">
+<pre>&lt;!-- 1. 新增私有仓库镜像 --&gt;
+&lt;mirror&gt;
+  &lt;id&gt;company-repo&lt;/id&gt;
+  &lt;mirrorOf&gt;company-releases&lt;/mirrorOf&gt;
+  &lt;url&gt;https://your-company-nexus/repository/maven-releases/&lt;/url&gt;
+&lt;/mirror&gt;
+
+&lt;!-- 2. 在profile中添加私有仓库声明 --&gt;
+&lt;repository&gt;
+  &lt;id&gt;company-releases&lt;/id&gt;
+  &lt;url&gt;https://your-company-nexus/repository/maven-releases/&lt;/url&gt;
+  &lt;releases&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/releases&gt;
+  &lt;snapshots&gt;&lt;enabled&gt;false&lt;/enabled&gt;&lt;/snapshots&gt;
+&lt;/repository&gt;</pre>
+                                </div>
+                                <p class="text-gray-700">企业场景下，建议将私有仓库镜像优先级调至阿里云之前，确保优先从企业仓库拉取内部依赖。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 问题6 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <button class="faq-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left" data-target="faq6">
+                                <span class="font-medium text-gray-800">如何避免私有仓库被mirrorOf="*"的镜像覆盖？</span>
+                                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                            </button>
+                            <div id="faq6" class="faq-content hidden p-4 border-t border-gray-200">
+                                <p class="text-gray-700">当配置了私有仓库时，需要修改兜底镜像的<code class="bg-gray-100 px-1 py-0.5 rounded">mirrorOf</code>，排除私有仓库ID：</p>
+                                <div class="code-block bg-gray-900 text-gray-100 p-4 rounded-lg my-3">
+<pre>&lt;mirror&gt;
+  &lt;id&gt;maven-central&lt;/id&gt;
+  &lt;mirrorOf&gt;*,!company-releases&lt;/mirrorOf&gt; &lt;!-- 排除企业私有仓库ID --&gt;
+  &lt;url&gt;https://repo1.maven.org/maven2/&lt;/url&gt;
+&lt;/mirror&gt;</pre>
+                                </div>
+                                <p class="text-gray-700">这样配置后，Maven会使用私有仓库地址下载内部依赖，而其他依赖则会使用镜像加速。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </article>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2 flex items-center">
+                        <i class="fa fa-cogs mr-2"></i>Maven配置指南
+                    </h3>
+                    <p class="text-gray-400">全面掌握Maven settings.xml的使用方法与最佳实践</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fa fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 Maven配置指南. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 移动端菜单切换
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // FAQ折叠功能
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const content = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // 复制代码功能
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const textArea = document.createElement('textarea');
+            textArea.value = codeBlock.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // 显示复制成功提示
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+            button.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('bg-green-600');
+            }, 2000);
+        }
+
+        // 返回顶部按钮
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+            
+            // 导航栏滚动效果
+            const nav = document.querySelector('nav');
+            if (window.pageYOffset > 100) {
+                nav.classList.add('py-2');
+                nav.classList.remove('py-3');
+            } else {
+                nav.classList.add('py-3');
+                nav.classList.remove('py-2');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    // 关闭移动端菜单（如果打开）
+                    document.getElementById('mobileMenu').classList.add('hidden');
+                    
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
