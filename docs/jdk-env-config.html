@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JDK环境变量配置全攻略：从安装到排错</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0d6efd',
+                        secondary: '#084298',
+                        light: '#f8f9fa',
+                        dark: '#212529',
+                        muted: '#6c757d',
+                        code: '#dc3545',
+                        tip: '#e7f5ff',
+                    },
+                    fontFamily: {
+                        sans: ['Microsoft YaHei', 'PingFang SC', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .section-fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            .toc-active {
+                color: #0d6efd;
+                font-weight: 600;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md sticky top-0 z-50 transition-custom">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center space-x-2">
+                        <i class="fa fa-code text-primary text-2xl"></i>
+                        <span class="font-bold text-lg">Java开发指南</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="hidden md:block text-gray-600 hover:text-primary transition-custom">
+                        <i class="fa fa-home mr-1"></i>首页
+                    </a>
+                    <a href="#" class="hidden md:block text-gray-600 hover:text-primary transition-custom">
+                        <i class="fa fa-book mr-1"></i>教程
+                    </a>
+                    <a href="#" class="hidden md:block text-gray-600 hover:text-primary transition-custom">
+                        <i class="fa fa-question-circle mr-1"></i>问答
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 博客头部 -->
+        <header class="text-center mb-12 section-fade-in">
+            <div class="inline-block bg-primary/10 text-primary px-4 py-1 rounded-full text-sm font-medium mb-4">
+                <i class="fa fa-calendar-check-o mr-1"></i>Java开发
+            </div>
+            <h1 class="text-[clamp(1.8rem,5vw,2.8rem)] font-bold text-dark mb-6 leading-tight text-shadow">
+                JDK环境变量配置全攻略：从安装到排错
+            </h1>
+            <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-muted text-sm">
+                <span class="flex items-center">
+                    <i class="fa fa-clock-o mr-2"></i>发布时间：2025年08月26日
+                </span>
+                <span class="flex items-center">
+                    <i class="fa fa-eye mr-2"></i>阅读时长：约10分钟
+                </span>
+                <span class="flex items-center">
+                    <i class="fa fa-user mr-2"></i>适用人群：Java初学者、开发环境配置者
+                </span>
+                <span class="flex items-center">
+                    <i class="fa fa-tag mr-2"></i>标签：JDK、环境变量、Java配置
+                </span>
+            </div>
+            
+            <!-- 分享按钮 -->
+            <div class="flex justify-center mt-6 space-x-3">
+                <button class="w-9 h-9 rounded-full bg-[#1da1f2]/10 text-[#1da1f2] flex items-center justify-center hover:bg-[#1da1f2]/20 transition-custom">
+                    <i class="fa fa-twitter"></i>
+                </button>
+                <button class="w-9 h-9 rounded-full bg-[#4267b2]/10 text-[#4267b2] flex items-center justify-center hover:bg-[#4267b2]/20 transition-custom">
+                    <i class="fa fa-facebook"></i>
+                </button>
+                <button class="w-9 h-9 rounded-full bg-[#25d366]/10 text-[#25d366] flex items-center justify-center hover:bg-[#25d366]/20 transition-custom">
+                    <i class="fa fa-whatsapp"></i>
+                </button>
+                <button class="w-9 h-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300 transition-custom">
+                    <i class="fa fa-link"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 博客核心内容 -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- 左侧目录导航 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-5 sticky top-24 section-fade-in">
+                    <h3 class="font-bold text-dark text-lg mb-4 flex items-center">
+                        <i class="fa fa-list-ul text-primary mr-2"></i>文章目录
+                    </h3>
+                    <ul class="space-y-3 text-sm">
+                        <li>
+                            <a href="#section1" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">1</span>
+                                开篇：为什么你总被JDK配置搞晕？
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#section2" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">2</span>
+                                JDK安装后，为什么能直接用java命令？
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#section3" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">3</span>
+                                必须配置JAVA_HOME的3个核心原因
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#section4" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">4</span>
+                                规范配置JDK环境变量（3步搞定）
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#section5" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">5</span>
+                                JDK配置常见问题（FAQ）
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#section6" class="text-gray-700 hover:text-primary transition-custom flex items-center">
+                                <span class="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center mr-2 text-xs">6</span>
+                                总结：配置的核心逻辑
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="lg:col-span-3">
+                <article class="bg-white rounded-xl shadow-sm p-6 md:p-8 section-fade-in">
+                    <!-- 封面图 -->
+                    <div class="rounded-lg overflow-hidden mb-8">
+                        <img src="https://picsum.photos/id/0/1200/400" alt="JDK环境变量配置" class="w-full h-64 md:h-80 object-cover">
+                    </div>
+
+                    <!-- 引言：解决用户核心困惑 -->
+                    <section id="section1" class="mb-12 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">1</span>
+                            开篇：为什么你总被JDK配置搞晕？
+                        </h2>
+                        <p class="mb-4 text-gray-700 leading-relaxed">你是否遇到过这些问题：</p>
+                        <ul class="list-disc pl-6 mb-4 space-y-2 text-gray-700">
+                            <li>JDK安装后，<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">java -version</code>显示17，但<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">mvn -v</code>却显示1.8？</li>
+                            <li>明明PATH里有JDK路径，却还要手动配置JAVA_HOME？</li>
+                            <li>切换JDK版本时，改了PATH却不生效？</li>
+                        </ul>
+                        <p class="text-gray-700 leading-relaxed">这些问题的根源，都在于没搞懂<strong class="text-dark">PATH</strong>与<strong class="text-dark">JAVA_HOME</strong>的核心区别和配置逻辑。本文将从JDK安装的默认行为出发，一步步拆解配置原理，帮你彻底掌握JDK环境变量，告别版本混乱。</p>
+                    </section>
+
+                    <!-- 第一部分：JDK安装的默认操作 -->
+                    <section id="section2" class="mb-12 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">2</span>
+                            JDK安装后，为什么能直接用java命令？
+                        </h2>
+                        <p class="mb-4 text-gray-700 leading-relaxed">当你双击JDK安装包完成安装后，打开命令行输入<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">java -version</code>就能看到版本信息——这不是“魔法”，而是安装程序帮你做了关键一步：</p>
+                        <p class="mb-6 text-gray-700 leading-relaxed font-medium">
+                            <i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i>
+                            自动将JDK的bin目录添加到系统PATH环境变量中。
+                        </p>
+
+                        <div class="bg-tip border-l-4 border-primary rounded-r-lg p-5 mb-6">
+                            <h4 class="font-semibold text-secondary mb-2 flex items-center">
+                                <i class="fa fa-info-circle mr-2"></i>什么是PATH？
+                            </h4>
+                            <p class="text-primary mb-0">PATH是系统级环境变量，作用是告诉操作系统：当输入<code class="bg-white/50 px-1 py-0.5 rounded font-mono">java</code>、<code class="bg-white/50 px-1 py-0.5 rounded font-mono">javac</code>等命令时，去哪里查找对应的可执行文件（.exe）。</p>
+                        </div>
+
+                        <p class="mb-4 text-gray-700 leading-relaxed">比如你安装JDK 17，安装程序会自动把类似<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">C:\Program Files\Java\jdk-17.0.1\bin</code>的路径添加到PATH。这样一来，操作系统就能在这个路径下找到<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">java.exe</code>，让你直接使用命令。</p>
+                        <p class="text-gray-700 leading-relaxed">但问题来了：既然安装程序已经配置了PATH，为什么还要额外配置JAVA_HOME？</p>
+                    </section>
+
+                    <!-- 第二部分：JAVA_HOME的必要性 -->
+                    <section id="section3" class="mb-12 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">3</span>
+                            必须配置JAVA_HOME的3个核心原因
+                        </h2>
+                        <p class="mb-6 text-gray-700 leading-relaxed">PATH只能满足“命令行能用java”的基础需求，但在Java开发中，<strong class="text-dark">JAVA_HOME才是“灵魂”</strong>，原因有三：</p>
+
+                        <h3 class="text-xl font-semibold text-dark mb-4 mt-8 flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            1. 开发工具依赖JAVA_HOME定位JDK
+                        </h3>
+                        <p class="mb-4 text-gray-700 leading-relaxed">Maven、Tomcat、IDEA等主流工具，<strong class="text-dark">不会从PATH找Java</strong>，而是强制通过JAVA_HOME确定JDK根目录。比如：</p>
+                        <ul class="list-disc pl-6 mb-6 space-y-2 text-gray-700">
+                            <li>Maven运行时优先读取JAVA_HOME，若未配置，会报错“Could not find JDK”；</li>
+                            <li>Tomcat启动脚本通过<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\jre\bin</code>找到运行环境；</li>
+                            <li>IDEA默认用JAVA_HOME作为默认JDK，省去手动选择路径的麻烦。</li>
+                        </ul>
+                        <p class="text-gray-700 leading-relaxed">没有JAVA_HOME，这些工具要么无法启动，要么需要手动指定路径，效率极低。</p>
+
+                        <h3 class="text-xl font-semibold text-dark mb-4 mt-8 flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            2. 区分JDK与JRE，获取完整开发资源
+                        </h3>
+                        <p class="mb-4 text-gray-700 leading-relaxed">JDK不仅包含bin目录（java.exe、javac.exe），还有lib目录（核心类库）、include目录（C语言头文件）等关键资源。PATH只指向bin目录，而JAVA_HOME指向JDK根目录，工具可通过<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\lib</code>、<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\include</code>获取完整资源。</p>
+                        <p class="text-gray-700 leading-relaxed">比如编译Java程序时，编译器需要加载lib目录下的rt.jar类库，这必须通过JAVA_HOME定位。</p>
+
+                        <h3 class="text-xl font-semibold text-dark mb-4 mt-8 flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            3. 多版本切换更灵活
+                        </h3>
+                        <p class="mb-4 text-gray-700 leading-relaxed">开发中常需要切换JDK版本（如老项目用8，新项目用17）。若只靠PATH切换：</p>
+                        <ol class="list-decimal pl-6 mb-6 space-y-2 text-gray-700">
+                            <li>打开环境变量，删除旧JDK的bin路径；</li>
+                            <li>添加新JDK的bin路径；</li>
+                            <li>重启命令行验证——步骤繁琐且易出错。</li>
+                        </ol>
+                        <p class="text-gray-700 leading-relaxed">有了JAVA_HOME后，切换版本只需<strong class="text-dark">修改JAVA_HOME的值</strong>（如从<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">jdk1.8</code>改为<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">jdk17</code>），PATH中的<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\bin</code>会自动指向新路径，所有工具同步生效。</p>
+                    </section>
+
+                    <!-- 第三部分：实操配置步骤 -->
+                    <section id="section4" class="mb-12 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">4</span>
+                            规范配置JDK环境变量（3步搞定）
+                        </h2>
+                        <p class="mb-6 text-gray-700 leading-relaxed">安装程序自动添加的“具体路径”（如<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">C:\xxx\jdk17\bin</code>）是“临时方案”，规范配置需按以下步骤操作：</p>
+
+                        <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 mb-8">
+                            <h3 class="text-xl font-semibold text-dark mb-4 flex items-center">
+                                <span class="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center mr-2 flex-shrink-0 text-sm">1</span>
+                                配置JAVA_HOME
+                            </h3>
+                            <ol class="list-decimal pl-6 space-y-2 text-gray-700">
+                                <li>右键“此电脑” → “属性” → “高级系统设置” → “环境变量”；</li>
+                                <li>在“系统变量”区点击“新建”；</li>
+                                <li>变量名：<strong class="text-dark">JAVA_HOME</strong>（全大写，大小写敏感）；</li>
+                                <li>变量值：JDK根目录（如<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">C:\Program Files\Java\jdk-17.0.1</code>，路径不含空格）；</li>
+                                <li>点击“确定”保存。</li>
+                            </ol>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 mb-8">
+                            <h3 class="text-xl font-semibold text-dark mb-4 flex items-center">
+                                <span class="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center mr-2 flex-shrink-0 text-sm">2</span>
+                                优化PATH（删除具体路径，添加%JAVA_HOME%\bin）
+                            </h3>
+                            <p class="mb-3 text-gray-700">安装程序已添加具体路径，为避免版本冲突，需替换为“变量路径”：</p>
+                            <ol class="list-decimal pl-6 space-y-2 text-gray-700">
+                                <li>在“系统变量”区找到“PATH”，点击“编辑”；</li>
+                                <li>删除所有类似<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">C:\Program Files\Java\jdk-xxx\bin</code>的具体路径；</li>
+                                <li>点击“新建”，输入<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\bin</code>，并移到PATH列表靠前位置；</li>
+                                <li>点击“确定”保存。</li>
+                            </ol>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 mb-6">
+                            <h3 class="text-xl font-semibold text-dark mb-4 flex items-center">
+                                <span class="bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center mr-2 flex-shrink-0 text-sm">3</span>
+                                验证配置是否成功
+                            </h3>
+                            <p class="mb-3 text-gray-700">重启命令行（环境变量修改需重启生效），执行以下命令验证：</p>
+                            <div class="bg-gray-900 text-gray-300 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+<pre>:: 1. 查看JAVA_HOME是否正确
+echo %JAVA_HOME%
+:: 预期输出：C:\Program Files\Java\jdk-17.0.1（你的JDK根目录）
+
+:: 2. 查看Java运行版本
+java -version
+:: 预期输出：java version "17.0.1"（与JAVA_HOME版本一致）
+
+:: 3. 查看Java编译版本
+javac -version
+:: 预期输出：javac 17.0.1（与上一步版本一致）
+
+:: 4. 验证Maven版本（若已安装）
+mvn -v
+:: 预期输出：Java version: 17.0.1（与上述版本一致）</pre>
+                            </div>
+                            <p class="mt-3 text-gray-700">若所有命令版本一致，说明配置成功！</p>
+                        </div>
+                    </section>
+
+                    <!-- 第四部分：常见问题解答 -->
+                    <section id="section5" class="mb-12 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">5</span>
+                            JDK配置常见问题（FAQ）
+                        </h2>
+                        <div class="space-y-6 mt-6">
+                            <div class="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+                                <div class="faq-question font-semibold text-secondary text-lg mb-3 flex items-start">
+                                    <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0 text-sm mt-0.5">Q</span>
+                                    JDK安装程序为什么不直接配置JAVA_HOME？
+                                </div>
+                                <div class="faq-answer text-gray-700 ml-9">
+                                    <p>安装程序的核心目标是“让所有用户快速能用Java”，而非针对开发者。普通用户（如学生、非技术人员）可能只需“运行Java程序”，无需切换版本或用Maven——自动添加PATH能实现“零配置即用”，降低使用门槛。而JAVA_HOME是“进阶需求”，交给开发者手动配置更灵活。</p>
+                                </div>
+                            </div>
+
+                            <div class="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+                                <div class="faq-question font-semibold text-secondary text-lg mb-3 flex items-start">
+                                    <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0 text-sm mt-0.5">Q</span>
+                                    PATH中同时有具体路径和%JAVA_HOME%\bin，会有问题吗？
+                                </div>
+                                <div class="faq-answer text-gray-700 ml-9">
+                                    <p>会导致“版本切换失效”！操作系统按PATH路径顺序查找命令，若具体路径在前，即使改了JAVA_HOME，仍会优先使用旧版本。比如PATH先有<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">jdk1.8\bin</code>，后有<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\bin</code>（指向17），<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">java -version</code>仍显示1.8。解决办法：删除所有具体路径，只保留<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\bin</code>。</p>
+                                </div>
+                            </div>
+
+                            <div class="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+                                <div class="faq-question font-semibold text-secondary text-lg mb-3 flex items-start">
+                                    <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0 text-sm mt-0.5">Q</span>
+                                    改了JAVA_HOME，mvn -v版本还是没变，怎么办？
+                                </div>
+                                <div class="faq-answer text-gray-700 ml-9">
+                                    <p>分两步排查：① 未重启命令行：环境变量修改需重启命令行生效；② Maven配置文件指定了版本：检查Maven的<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">settings.xml</code>（全局：<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">MAVEN_HOME/conf/settings.xml</code>；用户：<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">~/.m2/settings.xml</code>），若有<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">&lt;java.home&gt;</code>属性，删除该配置，让Maven优先使用JAVA_HOME。</p>
+                                </div>
+                            </div>
+
+                            <div class="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+                                <div class="faq-question font-semibold text-secondary text-lg mb-3 flex items-start">
+                                    <span class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0 text-sm mt-0.5">Q</span>
+                                    为什么推荐用%JAVA_HOME%\bin，而非具体路径？
+                                </div>
+                                <div class="faq-answer text-gray-700 ml-9">
+                                    <p>灵活性！当你升级JDK或切换版本时，只需修改JAVA_HOME的值，PATH中的<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">%JAVA_HOME%\bin</code>会自动同步，无需手动修改PATH。比如从JDK 17升级到21，只需把JAVA_HOME改为<code class="bg-gray-100 px-1 py-0.5 rounded text-code font-mono">jdk-21.0.1</code>，PATH无需变动。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 第五部分：总结 -->
+                    <section id="section6" class="mb-8 section-fade-in">
+                        <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                            <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">6</span>
+                            总结：配置的核心逻辑
+                        </h2>
+                        <div class="bg-light rounded-xl p-6 border border-gray-200 mb-6">
+                            <h3 class="text-lg font-semibold text-primary mb-4 flex items-center">
+                                <i class="fa fa-star text-yellow-500 mr-2"></i>核心结论
+                            </h3>
+                            <ul class="space-y-2 text-gray-700">
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                                    <span>PATH负责“命令行能用Java”，JAVA_HOME负责“工具能找到完整JDK”，二者缺一不可；</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                                    <span>安装程序的自动配置是“保底方案”，手动配置JAVA_HOME+%JAVA_HOME%\bin是“规范方案”；</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                                    <span>多版本切换的关键是“改JAVA_HOME”，而非改PATH；</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-2 flex-shrink-0"></i>
+                                    <span>配置后务必重启命令行，验证版本一致性。</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">掌握JDK环境变量配置，不仅能解决日常开发中的版本问题，也是理解Java生态的基础。希望本文能帮你彻底搞懂配置逻辑，让Java开发环境更稳定、更灵活！</p>
+                    </section>
+
+                    <!-- 点赞和分享 -->
+                    <div class="flex flex-wrap justify-between items-center pt-6 border-t border-gray-200">
+                        <div class="flex space-x-4 mb-4 sm:mb-0">
+                            <button class="flex items-center text-gray-600 hover:text-primary transition-custom">
+                                <i class="fa fa-thumbs-up mr-2"></i>
+                                <span>有用 (128)</span>
+                            </button>
+                            <button class="flex items-center text-gray-600 hover:text-primary transition-custom">
+                                <i class="fa fa-bookmark-o mr-2"></i>
+                                <span>收藏</span>
+                            </button>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 mr-2">分享本文：</span>
+                            <div class="inline-flex space-x-2">
+                                <button class="w-8 h-8 rounded-full bg-[#1da1f2]/10 text-[#1da1f2] flex items-center justify-center hover:bg-[#1da1f2]/20 transition-custom text-sm">
+                                    <i class="fa fa-twitter"></i>
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-[#4267b2]/10 text-[#4267b2] flex items-center justify-center hover:bg-[#4267b2]/20 transition-custom text-sm">
+                                    <i class="fa fa-facebook"></i>
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-[#25d366]/10 text-[#25d366] flex items-center justify-center hover:bg-[#25d366]/20 transition-custom text-sm">
+                                    <i class="fa fa-whatsapp"></i>
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300 transition-custom text-sm">
+                                    <i class="fa fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- 博客底部 -->
+        <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-muted text-sm">
+            <p class="mb-4">本文由技术博客团队原创 | 如需转载，请注明出处 | 如有疑问，欢迎留言讨论</p>
+            <p>© 2025 Java开发指南 | 专注于Java技术分享</p>
+        </footer>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-custom hover:bg-primary/90">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 回到顶部按钮
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId !== '#') {
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 滚动动画
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('section-fade-in');
+                    observer.unobserve(entry.target);
+                    
+                    // 更新目录激活状态
+                    const id = entry.target.getAttribute('id');
+                    document.querySelectorAll('.toc-active').forEach(item => {
+                        item.classList.remove('toc-active');
+                    });
+                    document.querySelector(`a[href="#${id}"]`)?.classList.add('toc-active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.remove('section-fade-in');
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
