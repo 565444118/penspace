@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统运维记录详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.7/tinymce.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        accent: '#4895ef',
+                        success: '#4cc9f0',
+                        warning: '#f72585',
+                        danger: '#f72585',
+                        info: '#4cc9f0',
+                        dark: '#1d3557',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow': '0 0 15px rgba(67, 97, 238, 0.2)',
+                        'hover': '0 10px 25px -5px rgba(67, 97, 238, 0.1), 0 8px 10px -6px rgba(67, 97, 238, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+            }
+            .gradient-bg-word {
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            }
+            .table-hover {
+                @apply transition-all duration-300 hover:bg-blue-50 hover:translate-x-1;
+            }
+            .status-pill {
+                @apply px-3 py-1 rounded-full text-xs font-semibold shadow-md transition-all duration-300;
+            }
+            .numbered-item {
+                @apply flex items-start mb-1 last:mb-0;
+            }
+            .number-badge {
+                @apply w-5 h-5 rounded-full flex items-center justify-center text-white text-xs mr-2 flex-shrink-0 mt-0.5;
+            }
+            .export-btn {
+                @apply px-5 py-2.5 rounded-lg shadow-md transition-all duration-300 flex items-center transform hover:scale-105;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans text-gray-800 p-4 md:p-8 min-h-screen">
+    <div class="max-w-6xl mx-auto">
+        <!-- 顶部操作栏 -->
+        <div class="bg-white rounded-t-xl shadow-glow p-5 flex flex-wrap justify-between items-center border-b border-blue-100 gap-3">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary flex items-center">
+                <i class="fa fa-cogs mr-3 text-primary"></i>
+                运维记录详情
+            </h1>
+            <div class="flex gap-3">
+                <button id="exportWord" class="gradient-bg-word hover:opacity-90 text-white export-btn">
+                    <i class="fa fa-file-word-o mr-2"></i>
+                    导出Word
+                </button>
+                <button id="exportPdf" class="gradient-bg hover:opacity-90 text-white export-btn">
+                    <i class="fa fa-file-pdf-o mr-2"></i>
+                    导出PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- 表格记录 -->
+        <div class="bg-white rounded-b-xl shadow-glow overflow-hidden" id="recordContent">
+            <div class="overflow-x-auto">
+                <table class="min-w-full" id="maintenanceTable">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-blue-50 to-indigo-50 text-left">
+                            <th scope="col" class="px-6 py-5 text-sm font-semibold text-gray-700 uppercase tracking-wider border-b border-blue-100">日期范围</th>
+                            <th scope="col" class="px-6 py-5 text-sm font-semibold text-gray-700 uppercase tracking-wider border-b border-blue-100">运维内容</th>
+                            <th scope="col" class="px-6 py-5 text-sm font-semibold text-gray-700 uppercase tracking-wider border-b border-blue-100">类型</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-blue-50">
+                        <!-- 2024年11月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年1月10日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-primary">1</span>
+                                    <span>frame漏洞检测并修复</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-red-50 text-danger hover:bg-red-100">漏洞修复</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年1月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年1月15日～1月23日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-success">1</span>
+                                    <span>岗位竞争比功能开发</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-success">2</span>
+                                    <span>岗位竞争比开关控制功能开发</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-green-50 text-green-600 hover:bg-green-100">功能开发</span>
+                            </td>
+                        </tr>
+                        
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年1月25日～1月30日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-success">1</span>
+                                    <span>开发高等院校维护功能</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-success">2</span>
+                                    <span>前端院校选择优化</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-green-50 text-green-600 hover:bg-green-100">功能开发</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年2月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年2月10日～2月20日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-info">1</span>
+                                    <span>考试岗位按照导入的顺序显示单位及岗位优化</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-info">2</span>
+                                    <span>准考证打印数量查询功能开发</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-info">3</span>
+                                    <span>考生日志和管理员日志记录优化</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-info">4</span>
+                                    <span>后台修改考生姓名时，rsj登录缓存未清理bug修复</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-blue-50 text-blue-600 hover:bg-blue-100">综合优化</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年3月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年3月17日～23日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-purple-500">1</span>
+                                    <span>考试报名期间系统监控运维</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-purple-50 text-purple-600 hover:bg-purple-100">系统监控</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年7月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年7月22日～7月25日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-yellow-500">1</span>
+                                    <span>考场座次表导出优化</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-yellow-50 text-yellow-600 hover:bg-yellow-100">功能优化</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年8月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年8月6日～8月15日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-indigo-500">1</span>
+                                    <span>新短信接口对接，功能调整，测试</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-indigo-500">2</span>
+                                    <span>SSL证书更换及配置</span>
+                                </div>
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-indigo-500">3</span>
+                                    <span>报名系统安可云迁移方案制定</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-indigo-50 text-indigo-600 hover:bg-indigo-100">系统维护</span>
+                            </td>
+                        </tr>
+                        
+                        <!-- 2025年9月 -->
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年9月1日～9月3日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-danger">1</span>
+                                    <span>九三阅兵期间系统安全防护</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-red-50 text-red-600 hover:bg-red-100">安全防护</span>
+                            </td>
+                        </tr>
+                        
+                        <tr class="table-hover">
+                            <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-dark">2025年9月8日</td>
+                            <td class="px-6 py-5 text-sm text-gray-600">
+                                <div class="numbered-item">
+                                    <span class="number-badge bg-info">1</span>
+                                    <span>协助统一登录平台处理生僻字问题</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 whitespace-nowrap">
+                                <span class="status-pill bg-blue-50 text-blue-600 hover:bg-blue-100">问题处理</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出功能脚本 -->
+    <script>
+        // 导出PDF功能
+        document.getElementById('exportPdf').addEventListener('click', function() {
+            // 显示加载状态
+            this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 正在导出...';
+            this.disabled = true;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); // 横向布局更适合表格
+            
+            // 获取要导出的内容
+            const content = document.getElementById('recordContent');
+            
+            // 生成PDF
+            html2canvas(content, {
+                scale: 2, // 提高分辨率
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const imgWidth = 297; // A4横向宽度(mm)
+                const pageHeight = 210; // A4横向高度(mm)
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                
+                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // 处理分页
+                while (heightLeft > 0) {
+                    doc.addPage();
+                    doc.addImage(imgData, 'JPEG', 0, -heightLeft, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // 保存PDF
+                doc.save('系统运维记录详情.pdf');
+                
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fa fa-file-pdf-o mr-2"></i> 导出PDF';
+                this.disabled = false;
+            }).catch(err => {
+                console.error('导出失败:', err);
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fa fa-file-pdf-o mr-2"></i> 导出PDF';
+                this.disabled = false;
+                alert('导出失败，请重试');
+            });
+        });
+
+        // 导出Word功能
+        document.getElementById('exportWord').addEventListener('click', function() {
+            // 显示加载状态
+            this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 正在导出...';
+            this.disabled = true;
+            
+            try {
+                // 创建一个临时容器用于生成Word内容
+                const tempContainer = document.createElement('div');
+                
+                // 添加标题
+                const title = document.createElement('h1');
+                title.style.textAlign = 'center';
+                title.style.fontFamily = 'Arial, sans-serif';
+                title.style.color = '#4361ee';
+                title.style.marginBottom = '20px';
+                title.textContent = '系统运维记录详情';
+                tempContainer.appendChild(title);
+                
+                // 复制表格并移除不必要的样式
+                const table = document.getElementById('maintenanceTable').cloneNode(true);
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                
+                // 处理表格样式使其在Word中正常显示
+                const cells = table.querySelectorAll('th, td');
+                cells.forEach(cell => {
+                    cell.style.border = '1px solid #ddd';
+                    cell.style.padding = '8px 12px';
+                    cell.style.fontFamily = 'Arial, sans-serif';
+                });
+                
+                // 处理表头样式
+                const headers = table.querySelectorAll('th');
+                headers.forEach(header => {
+                    header.style.backgroundColor = '#f0f4ff';
+                    header.style.fontWeight = 'bold';
+                });
+                
+                // 添加表格到临时容器
+                tempContainer.appendChild(table);
+                
+                // 创建HTML内容，包含Word所需的XML声明
+                const htmlContent = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office'
+                        xmlns:w='urn:schemas-microsoft-com:office:word'
+                        xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>系统运维记录详情</title>
+                        <!--[if gte mso 9]>
+                        <xml>
+                            <w:WordDocument>
+                                <w:View>Print</w:View>
+                                <w:Zoom>100</w:Zoom>
+                                <w:DoNotOptimizeForBrowser/>
+                            </w:WordDocument>
+                        </xml>
+                        <![endif]-->
+                    </head>
+                    <body>
+                        ${tempContainer.innerHTML}
+                    </body>
+                    </html>
+                `;
+                
+                // 创建Blob对象
+                const blob = new Blob(['\ufeff', htmlContent], {
+                    type: 'application/msword'
+                });
+                
+                // 保存文件
+                saveAs(blob, '系统运维记录详情.doc');
+                
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fa fa-file-word-o mr-2"></i> 导出Word';
+                this.disabled = false;
+            } catch (err) {
+                console.error('Word导出失败:', err);
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fa fa-file-word-o mr-2"></i> 导出Word';
+                this.disabled = false;
+                alert('Word导出失败，请重试');
+            }
+        });
+    </script>
+</body>
+</html>
+    
